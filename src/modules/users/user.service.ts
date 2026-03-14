@@ -1,6 +1,7 @@
 // src/modules/users/user.service.ts
 
 import { pool } from "../../config/db";
+import bcrypt from "bcryptjs";
 
 // User registration service
 const createUser = async (
@@ -12,10 +13,12 @@ const createUser = async (
 ) => {
   try {
     const query = `INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+
+
     const values = [
       name,
       email.toLowerCase(),
-      password,
+      await bcrypt.hash(password, 10),
       phone,
       role || "customer",
     ];

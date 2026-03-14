@@ -4,6 +4,7 @@ import config from "./config";
 import initDB, { pool } from "./config/db";
 import logger from "./middleware/logger";
 import { userRoutes } from "./modules/users/user.routes";
+import { authRoutes } from "./modules/auth/auth.route";
 
 // Initialize Express app
 const app = express();
@@ -22,35 +23,12 @@ app.get("/", logger, (req: Request, res: Response) => {
   });
 });
 
-
 // User CRUD routes
-app.use("/users", userRoutes);
-
-
-
-// User registration route
-
-
-// Get all users
-// app.get("/users", async (req: Request, res: Response) => {
-//   try {
-//     const result = await pool.query("SELECT * FROM users");
-//     res.json({
-//       status: "success",
-//       data: result.rows,
-//     });
-//   }
-//   catch (err) {
-//     console.error("Error fetching users:", err);
-//     res.status(500).json({
-//       status: "error",
-//       message: "Failed to fetch users",
-//     });
-//   }
-// });
+app.use("/users", logger, userRoutes);
+app.use("/api/v1/auth", logger, authRoutes);
 
 // Not Found route
-app.use((req: Request, res: Response) => {
+app.use( logger, (req: Request, res: Response) => {
   res.status(404).json({
     status: "error",
     message: "Route not found",
