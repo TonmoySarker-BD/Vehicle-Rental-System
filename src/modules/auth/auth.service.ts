@@ -2,6 +2,8 @@
 
 import { pool } from "../../config/db";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import config from "../../config";
 
 // User registration service
 const signup = async (
@@ -29,6 +31,35 @@ const signup = async (
     }
 };
 
+// User login service
+const signIn = async (email: string, password: string) => {
+    try {
+        const query = `SELECT * FROM users WHERE email = $1`;
+        const result = await pool.query(query, [email.toLowerCase()]);
+        if (result.rows.length === 0) {
+            throw new Error("User not found");
+        }
+        const user = result.rows[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            throw new Error("Invalid credentials");
+        }
+
+        const token = jwt.sign({ userId: user.id, name: user.name, email: user.email, role: user.role }, config.jwtSecret, {
+            expiresIn: "7d",
+        }); 
+
+        const { password: _password, ...safeUser } = user;
+        return { ...safeUser, token };
+    } catch (err) {
+        if (err instanceof Error) {
+            throw err;
+        }
+        throw new Error("Failed to sign in");
+    }
+};
+
 export const authServices = {
     signup,
+    signIn,
 };

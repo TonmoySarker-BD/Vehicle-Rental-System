@@ -5,3 +5,4 @@ export const authRoutes = express.Router();
 
 // User registration route
 authRoutes.post("/signup", authController.signup);
+authRoutes.post("/signin", authController.signIn);
