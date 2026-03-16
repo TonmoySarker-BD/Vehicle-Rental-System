@@ -3,8 +3,11 @@ import express, { Request, Response } from "express";
 import { userRoutes } from "./modules/users/user.routes";
 import { authRoutes } from "./modules/auth/auth.route";
 import logger from "./middleware/logger";
-// Initialize Express app
+import initDB from "./config/db";
+
+// Initialize Express app and database
 const app = express();
+initDB();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -18,7 +21,7 @@ app.get("/", logger, (req: Request, res: Response) => {
 });
 
 // User CRUD routes
-app.use("/users", logger, userRoutes);
+app.use("/api/v1/users", logger, userRoutes);
 app.use("/api/v1/auth", logger, authRoutes);
 
 // Not Found route

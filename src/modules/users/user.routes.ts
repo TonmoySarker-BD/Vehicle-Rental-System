@@ -6,9 +6,6 @@ import auth from "../../middleware/auth";
 
 const router = express.Router();
 
-// User registration route
-router.post("/", userControllers.createUser );
-
 // Get all users
 router.get("/", auth("admin"), userControllers.getAllUsers );
 

@@ -24,7 +24,8 @@ const signup = async (
         ];
         const result = await pool.query(query, values);
         const { password: _password, ...safeUser } = result.rows[0];
-        return safeUser;
+
+        return {id: safeUser.id , name: safeUser.name, email: safeUser.email, phone: safeUser.phone, role: safeUser.role};
     } catch (err) {
         console.error("Error creating user:", err);
         throw new Error("Failed to create user");

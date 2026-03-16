@@ -3,30 +3,6 @@
 import { Request, Response } from "express";
 import { userServices } from "./user.service";
 
-// User registration controller
-const createUser = async (req: Request, res: Response) => {
-  const { name, email, password, phone, role } = req.body;
-  try {
-    const result = await userServices.createUser(
-      name,
-      email,
-      password,
-      phone,
-      role,
-    );
-    res.status(201).json({
-      status: "success",
-      data: result,
-    });
-  } catch (err) {
-    console.error("Error creating user:", err);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to create user",
-    });
-  }
-};
-
 // Get all users controller
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -68,4 +44,4 @@ const getUserById = async (req: Request, res: Response) => {
     }
 };
 
-export const userControllers = { createUser, getAllUsers, getUserById };
+export const userControllers = { getAllUsers, getUserById };

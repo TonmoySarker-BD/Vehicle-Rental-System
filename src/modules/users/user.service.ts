@@ -1,35 +1,6 @@
 // src/modules/users/user.service.ts
 
 import { pool } from "../../config/db";
-import bcrypt from "bcryptjs";
-
-// User registration service
-const createUser = async (
-  name: string,
-  email: string,
-  password: string,
-  phone: string,
-  role: string,
-) => {
-  try {
-    const query = `INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
-
-
-    const values = [
-      name,
-      email.toLowerCase(),
-      await bcrypt.hash(password, 10),
-      phone,
-      role || "customer",
-    ];
-
-    const result = await pool.query(query, values);
-    return result.rows[0];
-  } catch (err) {
-    console.error("Error creating user:", err);
-    throw new Error("Failed to create user");
-  }
-};
 
 // Get all users service
 const getAllUsers = async () => {
@@ -54,7 +25,6 @@ const getUserById = async (id: number) => {
 };
 
 export const userServices = {
-  createUser,
   getAllUsers,
   getUserById,
 };
