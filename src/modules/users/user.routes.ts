@@ -1,15 +1,18 @@
 // src/modules/users/user.routes.ts
 
 import express, { Request, Response } from "express";
-import { userControllers } from "./user.controller";
 import auth from "../../middleware/auth";
+import { userController } from "./user.controller";
 
 const router = express.Router();
 
 // Get all users admin only
-router.get("/", auth("admin"), userControllers.getAllUsers );
+router.get("/", auth("admin"), userController.getAllUsers );
 
 // Get single user by ID  admin and user himself
-router.get("/:id", auth("admin", "customer"), userControllers.getUserById );
+router.get("/:userId", auth("admin", "customer"), userController.getUserById );
+
+// Update user profile - admin and user himself
+router.put("/:userId", auth("admin", "customer"), userController.updateUser );
 
 export const userRoutes = router;

@@ -22,7 +22,7 @@ const getAllUsers = async (req: Request, res: Response) => {
 
 // Get single user by ID controller - admin and user himself
 const getUserById = async (req: Request, res: Response) => {
-  const userId = req.params.id;
+  const userId = req.params.userId;
 
   try {
     const result = await userServices.getUserById(userId as unknown as number);
@@ -39,4 +39,44 @@ const getUserById = async (req: Request, res: Response) => {
   }
 };
 
-export const userControllers = { getAllUsers, getUserById };
+// Update user profile controller - admin and user himself
+const updateUser = async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  const { name, email, phone, role } = req.body;
+  if (name === undefined && email === undefined && phone === undefined && role === undefined) {
+    res.status(400).json({
+      success: false,
+      message: "No updatable fields provided",
+    });
+    return;
+  }
+  try {
+    const result = await userServices.updateUser(
+      userId as unknown as number,
+      req.body,
+    );
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: result
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "User not found") {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user profile",
+    });
+  }
+};
+
+export const userController = {
+  getAllUsers,
+  getUserById,
+  updateUser,
+};
