@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import config from "../../config";
 
-// User registration service
+// 1. User registration service
 const signup = async (
   name: string,
     email: string,
@@ -32,7 +32,7 @@ const signup = async (
     }
 };
 
-// User login service
+// 2. User login service
 const signIn = async (email: string, password: string) => {
     try {
         const query = `SELECT * FROM users WHERE email = $1`;

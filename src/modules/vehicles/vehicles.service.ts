@@ -1,7 +1,7 @@
 // src/modules/vehicles/vehicles.service.ts
 import { pool } from "../../config/db";
 
-// Create Vehicle service - admin only
+// 3. Create Vehicle service - admin only
 const createVehicle = async (vehicleData: any) => {
   const {
     vehicle_name,
@@ -37,10 +37,12 @@ const createVehicle = async (vehicleData: any) => {
   }
 };
 
-// Get all vehicles service
+// 4. Get all vehicles service
 const getAllVehicles = async () => {
   try {
-    const result = await pool.query("SELECT id, vehicle_name, type, registration_number, daily_rent_price, availability_status FROM vehicles");
+    const result = await pool.query(
+      "SELECT id, vehicle_name, type, registration_number, daily_rent_price, availability_status FROM vehicles",
+    );
 
     return result.rows;
   } catch (err) {
@@ -48,7 +50,28 @@ const getAllVehicles = async () => {
   }
 };
 
+// 5. Get Vehicle by ID service
+const getVehicleById = async (vehicleId: string) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, vehicle_name, type, registration_number, daily_rent_price, availability_status FROM vehicles WHERE id = $1",
+      [vehicleId],
+    );
+    return {
+      id: result.rows[0].id,
+      vehicle_name: result.rows[0].vehicle_name,
+      type: result.rows[0].type,
+      registration_number: result.rows[0].registration_number,
+      daily_rent_price: Number(result.rows[0].daily_rent_price),
+      availability_status: result.rows[0].availability_status,
+    };
+  } catch (err) {
+    throw new Error("Vehicle not found");
+  }
+};
+
 export const vehicleServices = {
   createVehicle,
   getAllVehicles,
+  getVehicleById,
 };

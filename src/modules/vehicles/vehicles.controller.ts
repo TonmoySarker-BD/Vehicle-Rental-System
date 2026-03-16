@@ -1,9 +1,9 @@
 // src/modules/vehicles/vehicles.controller.ts
 
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import { vehicleServices } from "./vehicles.service";
 
-// Create Vehicle controller - admin only
+// 3. Create Vehicle controller - admin only
 const createVehicle = async (req: Request, res: Response) => {
   const {
     vehicle_name,
@@ -41,7 +41,7 @@ const createVehicle = async (req: Request, res: Response) => {
   }
 };
 
-// Get all vehicles controller - public
+// 4. Get all vehicles controller - public
 const getAllVehicles = async (req: Request, res: Response) => {
   try {
     const result = await vehicleServices.getAllVehicles();
@@ -58,7 +58,35 @@ const getAllVehicles = async (req: Request, res: Response) => {
   }
 };
 
+// 5. Get Vehicle by ID controller - public
+const getVehicleById = async (req: Request, res: Response) => {
+  const { vehicleId } = req.params;
+  try {
+    const result = await vehicleServices.getVehicleById(vehicleId as string);
+    res.status(200).json({
+      success: true,
+      message: "Vehicle retrieved successfully",
+      data: result,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "Vehicle not found") {
+      res.status(404).json({
+        success: false,
+        message: "Vehicle not found",
+        error: err.message,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch vehicle",
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+  }
+};
+
 export const vehicleController = {
   createVehicle,
   getAllVehicles,
+  getVehicleById,
 };

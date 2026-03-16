@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import { authServices } from "./auth.service";
 
-// signup controller
+// 1. signup controller
 const signup = async (req: Request, res: Response) => {
   const { name, email, password, phone, role } = req.body;
   try {
@@ -26,7 +26,7 @@ const signup = async (req: Request, res: Response) => {
   }
 };
 
-// sign in controller
+// 2. sign in controller
 const signIn = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
