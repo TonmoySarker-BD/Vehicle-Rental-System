@@ -6,20 +6,27 @@ import { pool } from "../../config/db";
 const getAllUsers = async () => {
   try {
     const result = await pool.query("SELECT * FROM users");
-    return result.rows;
+    
+    const safeResult = result.rows.map((user) => {
+      const { password, ...safeUser } = user;
+
+      return {id: safeUser.id, name: safeUser.name, email: safeUser.email, phone: safeUser.phone, role: safeUser.role };
+    });
+
+    return safeResult;
   } catch (err) {
-    console.error("Error fetching users:", err);
     throw new Error("Failed to fetch users");
   }
 };
 
-// Get single user by ID service
+// Get single user by ID service - admin and user himself
 const getUserById = async (id: number) => {
+
   try {
     const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
-    return result.rows[0];
+    const { password, ...safeUser } = result.rows[0];
+    return {id: safeUser.id, name: safeUser.name, email: safeUser.email, phone: safeUser.phone, role: safeUser.role };
   } catch (err) {
-    console.error("Error fetching user by ID:", err);
     throw new Error("Failed to fetch user");
   }
 };

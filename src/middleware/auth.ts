@@ -28,6 +28,13 @@ const auth = ( ...roles: string[]) => (req: Request, res: Response, next: NextFu
     if (roles.length > 0 && !roles.includes(role)) {
       return res.status(403).json({ success: false, message: "Forbidden" });
     }
+    
+    if (roles.includes("customer") && role === "customer") {
+      const requestedUserId = parseInt(req.params.id as string);
+      if (requestedUserId !== userId) {
+        return res.status(403).json({ success: false, message: "Forbidden" });
+      }
+    }
     next();
   } catch (err) {
     return res.status(401).json({ success: false, message: "Invalid token" });
