@@ -51,7 +51,8 @@ const signIn = async (email: string, password: string) => {
         }); 
 
         const { password: _password, ...safeUser } = user;
-        return { ...safeUser, token };
+
+        return { token , user: {id: safeUser.id , name: safeUser.name, email: safeUser.email, phone: safeUser.phone, role: safeUser.role} };
     } catch (err) {
         if (err instanceof Error) {
             throw err;

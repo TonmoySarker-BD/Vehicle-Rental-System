@@ -20,7 +20,7 @@ const signup = async (req: Request, res: Response) => {
     });
   } catch (err) {
     res.status(500).json({
-      status: "error",
+      success: false,
       message: "Failed to create user",
     });
   }
@@ -32,7 +32,8 @@ const signIn = async (req: Request, res: Response) => {
   try {
     const result = await authServices.signIn(email, password);
     res.status(200).json({
-      status: "success",
+      success: true,
+      message: "Login successful",
       data: result,
     });
   } catch (err) {
@@ -42,7 +43,7 @@ const signIn = async (req: Request, res: Response) => {
         ? 401
         : 500;
     res.status(statusCode).json({
-      status: "error",
+      success: false,
       message,
     });
   }
