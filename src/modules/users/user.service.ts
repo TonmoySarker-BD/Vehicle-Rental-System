@@ -76,9 +76,23 @@ const updateUser = async (id: number, userData: any) => {
   }
 };
 
+// Delete user service - admin only
+// pending to check if no active bookings exist
+const deleteUser = async (id: number) => {
+  try {
+    const query = "DELETE FROM users WHERE id = $1 RETURNING *";
+    const result = await pool.query(query, [id]);
+    if (result.rows.length === 0) {
+      throw new Error("User not found");
+    }
+  } catch (err) {
+    throw new Error("Failed to delete user");
+  }
+};
 
 export const userServices = {
   getAllUsers,
   getUserById,
   updateUser,
+  deleteUser,
 };

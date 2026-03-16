@@ -75,8 +75,35 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
+// Delete user controller - admin only
+const deleteUser = async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  try {
+    await userServices.deleteUser(userId as unknown as number);
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "User not found") {
+      res.status(404).json({  
+        success: false,
+        message: "User not found",
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+      return;
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete user",
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+};
+
 export const userController = {
   getAllUsers,
   getUserById,
   updateUser,
+  deleteUser,
 };
