@@ -85,8 +85,40 @@ const getVehicleById = async (req: Request, res: Response) => {
   }
 };
 
+// 6. Update Vehicle controller - admin only
+const updateVehicle = async (req: Request, res: Response) => {
+  try {
+    const result = await vehicleServices.updateVehicle(
+      req.params.vehicleId as string,
+      req.body
+    );
+    res.status(200).json({
+      success: true,
+      message: "Vehicle updated successfully",
+      data: result,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "Vehicle not found") {
+      res.status(404).json({
+        success: false,
+        message: "Vehicle not found",
+        error: err.message,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Failed to update vehicle",
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+  }
+};
+
+// 7. Delete Vehicle controller - admin only
+
 export const vehicleController = {
   createVehicle,
   getAllVehicles,
   getVehicleById,
+  updateVehicle,
 };

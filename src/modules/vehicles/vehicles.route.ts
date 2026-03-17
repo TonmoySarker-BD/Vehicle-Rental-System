@@ -14,4 +14,10 @@ router.get("/", vehicleController.getAllVehicles);
 // 5. Get Vehicle by ID Route - public
 router.get("/:vehicleId", vehicleController.getVehicleById);
 
+// 6. Update Vehicle Route - admin only
+router.put("/:vehicleId", auth("admin"), vehicleController.updateVehicle);
+
+// 7. Delete Vehicle Route - admin only
+// router.delete("/:vehicleId", auth("admin"), vehicleController.deleteVehicle);
+
 export const vehicleRoutes = router;

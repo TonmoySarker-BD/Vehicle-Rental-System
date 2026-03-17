@@ -70,8 +70,76 @@ const getVehicleById = async (vehicleId: string) => {
   }
 };
 
+// 6. Update Vehicle service - admin only
+const updateVehicle = async (vehicleId: string, updateData: any) => {
+  const safeUpdateData = updateData ?? {};
+  const {
+    vehicle_name,
+    type,
+    registration_number,
+    daily_rent_price,
+    availability_status,
+  } = safeUpdateData;
+
+  const fieldsToUpdate = [];
+  const values = [];
+  let index = 1;
+
+  if (vehicle_name !== undefined) {
+    fieldsToUpdate.push(`vehicle_name = $${index}`);
+    values.push(vehicle_name);
+    index++;
+  }
+  if (type !== undefined) {
+    fieldsToUpdate.push(`type = $${index}`);
+    values.push(type);
+    index++;
+  }
+  if (registration_number !== undefined) {
+    fieldsToUpdate.push(`registration_number = $${index}`);
+    values.push(registration_number);
+    index++;
+  }
+  if (daily_rent_price !== undefined) {
+    fieldsToUpdate.push(`daily_rent_price = $${index}`);
+    values.push(daily_rent_price);
+    index++;
+  }
+  if (availability_status !== undefined) {
+    fieldsToUpdate.push(`availability_status = $${index}`);
+    values.push(availability_status);
+    index++;
+  }
+  if (fieldsToUpdate.length === 0) {
+    throw new Error("No valid fields to update");
+  }
+
+  const query =`UPDATE vehicles SET ${fieldsToUpdate.join(", ")} WHERE id = $${index} RETURNING *`;
+  
+  try {
+    const result = await pool.query(query, [...values, vehicleId]);
+    if (result.rows.length === 0) {
+      throw new Error("Vehicle not found");
+    }
+
+    return {
+      id: result.rows[0].id,
+      vehicle_name: result.rows[0].vehicle_name,
+      type: result.rows[0].type,
+      registration_number: result.rows[0].registration_number,
+      daily_rent_price: Number(result.rows[0].daily_rent_price),
+      availability_status: result.rows[0].availability_status,
+    };
+  } catch (err) {
+    throw new Error("Failed to update vehicle");
+  }
+};
+
+// 7. Delete Vehicle service - admin only
+
 export const vehicleServices = {
   createVehicle,
   getAllVehicles,
   getVehicleById,
+  updateVehicle,
 };
