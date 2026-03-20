@@ -47,7 +47,35 @@ const getAllBookings = async (req: Request, res: Response) => {
   }
 };
 
+// 13. Update Booking controller - admin and customer (customer can only update their own bookings)
+const updateBooking = async (req: Request, res: Response) => {
+  const { bookingId } = req.params;
+  try {
+    const result = await bookingServices.updateBooking(bookingId as string, req.body, req.user as JwtPayload);
+    const status = typeof req.body?.status === "string" ? req.body.status.toLowerCase() : "";
+    let message = "Booking updated successfully";
+    if (status === "cancelled") {
+      message = "Booking cancelled successfully";
+    }
+    if (status === "returned") {
+      message = "Booking marked as returned. Vehicle is now available";
+    }
+    res.status(200).json({
+      success: true,
+      message,
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update booking",
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+};
+
 export const bookingController = {
     createBooking,
     getAllBookings,
+    updateBooking
 };

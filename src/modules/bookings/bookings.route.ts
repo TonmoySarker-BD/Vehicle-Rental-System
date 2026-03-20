@@ -12,6 +12,6 @@ router.post("/", auth("admin", "customer"), bookingController.createBooking);
 router.get("/", auth("admin", "customer"), bookingController.getAllBookings);
 
 // 13. Update Booking Route - admin only
-// router.put("/:bookingId", auth("admin"), bookingController.updateBooking);
+router.put("/:bookingId", auth("admin", "customer"), bookingController.updateBooking);
 
 export const bookingRoutes = router;

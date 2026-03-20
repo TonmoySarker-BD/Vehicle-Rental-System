@@ -1,6 +1,13 @@
 // src/modules/bookings/bookings.service.ts
 import { pool } from "../../config/db";
 
+// Auto-return expired bookings
+const autoReturnExpiredBookings = async (client: any) => {
+  await client.query(
+    "WITH updated AS (UPDATE bookings SET status = 'returned' WHERE status = 'active' AND rent_end_date < CURRENT_DATE RETURNING vehicle_id) UPDATE vehicles SET availability_status = 'available' WHERE id IN (SELECT vehicle_id FROM updated)",
+  );
+};
+
 // 11. Create Booking controller - admin and customer
 const createBooking = async (bookingData: any) => {
   const { customer_id, vehicle_id, rent_start_date, rent_end_date } =bookingData;
@@ -79,6 +86,8 @@ const getAllBookings = async (user: Record<string, unknown>) => {
   const { userId, role } = user;
   const client = await pool.connect();
   try {
+    await client.query("BEGIN");
+    await autoReturnExpiredBookings(client);
     let bookingsResult;
     if (role === "admin") {
       bookingsResult = await client.query(
@@ -108,7 +117,7 @@ const getAllBookings = async (user: Record<string, unknown>) => {
         [userId],
       );
     }
-    return bookingsResult.rows.map((booking) => ({
+    const data = bookingsResult.rows.map((booking) => ({
       id: booking.id,
       customer_id: booking.customer_id,
       vehicle_id: booking.vehicle_id,
@@ -122,8 +131,89 @@ const getAllBookings = async (user: Record<string, unknown>) => {
         type: booking.type,
       },
     }));
+    await client.query("COMMIT");
+    return data;
   } catch (error) {
+    await client.query("ROLLBACK");
     throw new Error(error instanceof Error ? error.message : "Failed to retrieve bookings");
+  } finally {
+    client.release();
+  }
+};
+
+// 13. Update Booking controller - admin and customer (customer can only update their own bookings)
+const updateBooking = async (bookingId: string, updateData: Record<string, unknown>, user: Record<string, unknown>) => {
+  const { userId, role } = user;
+  const client = await pool.connect();
+  try {
+    const status = typeof updateData.status === "string" ? updateData.status.toLowerCase() : "";
+    if (role === "admin" && status !== "returned") {
+      throw new Error("Admin can only mark bookings as returned");
+    }
+    if (role === "customer" && status !== "cancelled") {
+      throw new Error("Customer can only cancel their booking");
+    }
+
+    await client.query("BEGIN");
+
+    const bookingResult = await client.query(
+      role === "admin"
+        ? "SELECT * FROM bookings WHERE id = $1"
+        : "SELECT * FROM bookings WHERE id = $1 AND customer_id = $2",
+      role === "admin" ? [bookingId] : [bookingId, userId],
+    );
+
+    if (bookingResult.rows.length === 0) {
+      throw new Error("Booking not found or access denied");
+    }
+
+    const booking = bookingResult.rows[0];
+    if (booking.status !== "active") {
+      throw new Error("Only active bookings can be updated");
+    }
+
+    const updatedBookingResult = await client.query(
+      "UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *",
+      [status, bookingId],
+    );
+
+    if (status === "returned" || status === "cancelled") {
+      await client.query(
+        "UPDATE vehicles SET availability_status = $1 WHERE id = $2",
+        ["available", booking.vehicle_id],
+      );
+    }
+
+    await client.query("COMMIT");
+
+    const updatedBooking = updatedBookingResult.rows[0];
+    if (status === "returned") {
+      return {
+        id: updatedBooking.id,
+        customer_id: updatedBooking.customer_id,
+        vehicle_id: updatedBooking.vehicle_id,
+        rent_start_date: updatedBooking.rent_start_date,
+        rent_end_date: updatedBooking.rent_end_date,
+        total_price: Number(updatedBooking.total_price),
+        status: updatedBooking.status,
+        vehicle: {
+          availability_status: "available",
+        },
+      };
+    }
+
+    return {
+      id: updatedBooking.id,
+      customer_id: updatedBooking.customer_id,
+      vehicle_id: updatedBooking.vehicle_id,
+      rent_start_date: updatedBooking.rent_start_date,
+      rent_end_date: updatedBooking.rent_end_date,
+      total_price: Number(updatedBooking.total_price),
+      status: updatedBooking.status,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw new Error(error instanceof Error ? error.message : "Failed to update booking");
   } finally {
     client.release();
   }
@@ -132,4 +222,5 @@ const getAllBookings = async (user: Record<string, unknown>) => {
 export const bookingServices = {
   createBooking,
   getAllBookings,
+  updateBooking
 };
