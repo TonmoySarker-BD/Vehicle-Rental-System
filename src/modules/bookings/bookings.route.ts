@@ -9,7 +9,7 @@ const router = Router();
 router.post("/", auth("admin", "customer"), bookingController.createBooking);
 
 // 12. Get all bookings Route - admin and customer (customer can only see their own bookings)
-// router.get("/", auth("admin", "customer"), bookingController.getAllBookings);
+router.get("/", auth("admin", "customer"), bookingController.getAllBookings);
 
 // 13. Update Booking Route - admin only
 // router.put("/:bookingId", auth("admin"), bookingController.updateBooking);

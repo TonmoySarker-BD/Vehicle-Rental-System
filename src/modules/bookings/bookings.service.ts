@@ -74,6 +74,62 @@ const createBooking = async (bookingData: any) => {
   }
 };
 
+// 12. Get all bookings controller - admin and customer (customer can only see their own bookings)
+const getAllBookings = async (user: Record<string, unknown>) => {
+  const { userId, role } = user;
+  const client = await pool.connect();
+  try {
+    let bookingsResult;
+    if (role === "admin") {
+      bookingsResult = await client.query(
+        "SELECT b.*, c.name AS customer_name, c.email AS customer_email, v.vehicle_name, v.registration_number, v.type FROM bookings b JOIN users c ON b.customer_id = c.id JOIN vehicles v ON b.vehicle_id = v.id",
+      );
+      return bookingsResult.rows.map((booking) => ({
+      id: booking.id,
+      customer_id: booking.customer_id,
+      vehicle_id: booking.vehicle_id,
+      rent_start_date: booking.rent_start_date,
+      rent_end_date: booking.rent_end_date,
+      total_price: Number(booking.total_price),
+      status: booking.status,
+      customer: {
+        name: booking.customer_name,
+        email: booking.customer_email
+      },
+      vehicle: {
+        vehicle_name: booking.vehicle_name,
+        registration_number: booking.registration_number,
+        type: booking.type,
+      },
+    }));
+    } else {
+      bookingsResult = await client.query(
+        "SELECT b.*, v.vehicle_name, v.registration_number, v.type FROM bookings b JOIN vehicles v ON b.vehicle_id = v.id WHERE b.customer_id = $1",
+        [userId],
+      );
+    }
+    return bookingsResult.rows.map((booking) => ({
+      id: booking.id,
+      customer_id: booking.customer_id,
+      vehicle_id: booking.vehicle_id,
+      rent_start_date: booking.rent_start_date,
+      rent_end_date: booking.rent_end_date,
+      total_price: Number(booking.total_price),
+      status: booking.status,
+      vehicle: {
+        vehicle_name: booking.vehicle_name,
+        registration_number: booking.registration_number,
+        type: booking.type,
+      },
+    }));
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Failed to retrieve bookings");
+  } finally {
+    client.release();
+  }
+};
+
 export const bookingServices = {
   createBooking,
+  getAllBookings,
 };

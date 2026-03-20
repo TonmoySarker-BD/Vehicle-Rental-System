@@ -1,6 +1,7 @@
 // src/modules/bookings/bookings.controller.ts
 import e, { Request, Response } from "express";
 import { bookingServices } from "./bookings.service";
+import { JwtPayload } from "jsonwebtoken";
 
 // 11. Create Booking controller - admin and customer
 const createBooking = async (req: Request, res: Response) => {
@@ -28,6 +29,25 @@ const createBooking = async (req: Request, res: Response) => {
   }
 };
 
+// 12. Get all bookings controller - admin and customer (customer can only see their own bookings)
+const getAllBookings = async (req: Request, res: Response) => {
+  try {
+    const result = await bookingServices.getAllBookings(req.user as JwtPayload);
+    res.status(200).json({
+      success: true,
+      message: "Bookings retrieved successfully",
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve bookings",
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+};
+
 export const bookingController = {
     createBooking,
+    getAllBookings,
 };
