@@ -6,7 +6,7 @@ import auth from "../../middleware/auth";
 const router = Router();
 
 // 11. Create Booking Route - admin and customer
-router.post("/", auth("admin" , "customer"), bookingController.createBooking);
+router.post("/", auth("admin", "customer"), bookingController.createBooking);
 
 // 12. Get all bookings Route - admin and customer (customer can only see their own bookings)
 // router.get("/", auth("admin", "customer"), bookingController.getAllBookings);
