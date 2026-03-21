@@ -2,7 +2,7 @@
 
 import { pool } from "../../config/db";
 
-// Get all users service
+// 8. Get all users service
 const getAllUsers = async () => {
   try {
     const result = await pool.query("SELECT * FROM users");
@@ -33,7 +33,7 @@ const getUserById = async (id: number) => {
   }
 };
 
-// Update user profile service - admin and user himself
+// 9. Update user profile service - admin and user himself
 const updateUser = async (id: number, userData: any) => {
   const { name, email, phone, role } = userData;
   try {
@@ -76,16 +76,27 @@ const updateUser = async (id: number, userData: any) => {
   }
 };
 
-// Delete user service - admin only
-// pending to check if no active bookings exist
+// 10. Delete user service - admin only
 const deleteUser = async (id: number) => {
   try {
+    const activeBookingResult = await pool.query(
+      "SELECT 1 FROM bookings WHERE customer_id = $1 AND status = 'active' LIMIT 1",
+      [id],
+    );
+
+    if (activeBookingResult.rows.length > 0) {
+      throw new Error("User has active bookings");
+    }
+
     const query = "DELETE FROM users WHERE id = $1 RETURNING *";
     const result = await pool.query(query, [id]);
     if (result.rows.length === 0) {
       throw new Error("User not found");
     }
   } catch (err) {
+    if (err instanceof Error && err.message === "User has active bookings") {
+      throw err;
+    }
     throw new Error("Failed to delete user");
   }
 };

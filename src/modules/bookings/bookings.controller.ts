@@ -32,10 +32,13 @@ const createBooking = async (req: Request, res: Response) => {
 // 12. Get all bookings controller - admin and customer (customer can only see their own bookings)
 const getAllBookings = async (req: Request, res: Response) => {
   try {
-    const result = await bookingServices.getAllBookings(req.user as JwtPayload);
+    const user = req.user as JwtPayload;
+    const result = await bookingServices.getAllBookings(user);
     res.status(200).json({
       success: true,
-      message: "Bookings retrieved successfully",
+      message: user.role === "admin"
+        ? "Bookings retrieved successfully"
+        : "Your bookings retrieved successfully",
       data: result,
     });
   } catch (err) {

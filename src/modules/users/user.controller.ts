@@ -3,7 +3,7 @@
 import { Request, Response } from "express";
 import { userServices } from "./user.service";
 
-// Get all users controller - admin only
+// 8. Get All Users controller - admin only
 const getAllUsers = async (req: Request, res: Response) => {
   try {
     const result = await userServices.getAllUsers();
@@ -20,7 +20,7 @@ const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
-// Get single user by ID controller - admin and user himself
+// Get Single User by ID controller - admin and user himself
 const getUserById = async (req: Request, res: Response) => {
   const userId = req.params.userId;
 
@@ -39,7 +39,7 @@ const getUserById = async (req: Request, res: Response) => {
   }
 };
 
-// Update user profile controller - admin and user himself
+// 9. Update user profile controller - admin and user himself
 const updateUser = async (req: Request, res: Response) => {
   const userId = req.params.userId;
   const { name, email, phone, role } = req.body;
@@ -75,7 +75,7 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-// Delete user controller - admin only
+// 10. Delete User controller - admin only
 const deleteUser = async (req: Request, res: Response) => {
   const userId = req.params.userId;
   try {
@@ -85,6 +85,13 @@ const deleteUser = async (req: Request, res: Response) => {
       message: "User deleted successfully",
     });
   } catch (err) {
+    if (err instanceof Error && err.message === "User has active bookings") {
+      res.status(409).json({
+        success: false,
+        message: "User has active bookings",
+      });
+      return;
+    }
     if (err instanceof Error && err.message === "User not found") {
       res.status(404).json({  
         success: false,
