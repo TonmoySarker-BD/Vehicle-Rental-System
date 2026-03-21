@@ -18,6 +18,6 @@ router.get("/:vehicleId", vehicleController.getVehicleById);
 router.put("/:vehicleId", auth("admin"), vehicleController.updateVehicle);
 
 // 7. Delete Vehicle Route - admin only
-// router.delete("/:vehicleId", auth("admin"), vehicleController.deleteVehicle);
+router.delete("/:vehicleId", auth("admin"), vehicleController.deleteVehicle);
 
 export const vehicleRoutes = router;

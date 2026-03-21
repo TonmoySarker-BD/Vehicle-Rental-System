@@ -33,6 +33,13 @@ const createVehicle = async (vehicleData: any) => {
 
     return response;
   } catch (err) {
+    const dbError = err as { code?: string; constraint?: string };
+    if (
+      dbError.code === "23505" &&
+      dbError.constraint === "vehicles_registration_number_key"
+    ) {
+      throw new Error("Registration number already exists");
+    }
     throw new Error("Failed to create vehicle");
   }
 };
@@ -136,10 +143,39 @@ const updateVehicle = async (vehicleId: string, updateData: any) => {
 };
 
 // 7. Delete Vehicle service - admin only
+const deleteVehicle = async (vehicleId: string) => {
+  try {
+    const activeBookingResult = await pool.query(
+      "SELECT 1 FROM bookings WHERE vehicle_id = $1 AND status = 'active' LIMIT 1",
+      [vehicleId],
+    );
+    if (activeBookingResult.rows.length > 0) {
+      throw new Error("Vehicle has active bookings");
+    }
+    const result = await pool.query(
+      "DELETE FROM vehicles WHERE id = $1 RETURNING *",
+      [vehicleId],
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("Vehicle not found");
+    }
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.message === "Vehicle has active bookings" ||
+        err.message === "Vehicle not found")
+    ) {
+      throw err;
+    }
+    throw new Error("Failed to delete vehicle");
+  }
+};
 
 export const vehicleServices = {
   createVehicle,
   getAllVehicles,
   getVehicleById,
   updateVehicle,
+  deleteVehicle
 };

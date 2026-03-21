@@ -33,6 +33,17 @@ const createVehicle = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err) {
+    if (
+      err instanceof Error &&
+      err.message === "Registration number already exists"
+    ) {
+      res.status(409).json({
+        success: false,
+        message: "Registration number already exists",
+        error: err.message,
+      });
+      return;
+    }
     res.status(500).json({
       success: false,
       message: "Failed to create vehicle",
@@ -90,7 +101,7 @@ const updateVehicle = async (req: Request, res: Response) => {
   try {
     const result = await vehicleServices.updateVehicle(
       req.params.vehicleId as string,
-      req.body
+      req.body,
     );
     res.status(200).json({
       success: true,
@@ -115,10 +126,42 @@ const updateVehicle = async (req: Request, res: Response) => {
 };
 
 // 7. Delete Vehicle controller - admin only
+const deleteVehicle = async (req: Request, res: Response) => {
+  try {
+    await vehicleServices.deleteVehicle(req.params.vehicleId as string);
+    res.status(200).json({
+      success: true,
+      message: "Vehicle deleted successfully",
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "Vehicle has active bookings") {
+      res.status(409).json({
+        success: false,
+        message: "Vehicle has active bookings",
+        error: err.message,
+      });
+      return;
+    }
+    if (err instanceof Error && err.message === "Vehicle not found") {
+      res.status(404).json({
+        success: false,
+        message: "Vehicle not found",
+        error: err.message,
+      });
+      return;
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete vehicle",
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+};
 
 export const vehicleController = {
   createVehicle,
   getAllVehicles,
   getVehicleById,
   updateVehicle,
+  deleteVehicle,
 };
