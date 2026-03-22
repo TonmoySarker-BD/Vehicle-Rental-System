@@ -46,13 +46,12 @@ const auth =
         }
         const requestedUserId = parseInt(req.params.userId || req.body.customer_id);
 
-        if (isNaN(requestedUserId) || requestedUserId !== userId) {
+        if ((req.body.customer_id || req.params.userId) && requestedUserId !== userId) {
           return res
             .status(403)
             .json({ success: false, message: "Forbidden Access" });
         }
       }
-
       next();
     } catch (err) {
       return res.status(401).json({ success: false, message: "Invalid token" });
