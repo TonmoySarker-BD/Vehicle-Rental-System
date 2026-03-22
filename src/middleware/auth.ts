@@ -46,16 +46,7 @@ const auth =
         }
         const requestedUserId = parseInt(req.params.userId || req.body.customer_id);
 
-        if (isNaN(requestedUserId)) {
-          return res
-            .status(400)
-            .json({
-              success: false,
-              message: "User ID is required for customer role",
-            });
-        }
-
-        if (requestedUserId !== userId) {
+        if (isNaN(requestedUserId) || requestedUserId !== userId) {
           return res
             .status(403)
             .json({ success: false, message: "Forbidden Access" });
