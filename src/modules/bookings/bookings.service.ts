@@ -30,6 +30,15 @@ const createBooking = async (bookingData: any) => {
       [vehicle_id],
     );
 
+    const userResult = await client.query(
+      "SELECT id FROM users WHERE id = $1 AND role = 'customer'",
+      [customer_id],
+    );
+    
+    if (userResult.rows.length === 0) {
+      throw new Error("Customer not found");
+    }
+
     if (vehicleResult.rows.length === 0) {
       throw new Error("Vehicle not found");
     }

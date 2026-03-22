@@ -21,6 +21,22 @@ const createBooking = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err) {
+    if (err instanceof Error) {
+      if (err.message === "Vehicle not found") {
+        res.status(404).json({
+          success: false,
+          message: "Vehicle not found",
+        });
+        return;
+      }
+      if (err.message === "Customer not found") {
+        res.status(404).json({
+          success: false,
+          message: "Customer not found",
+        });
+        return;
+      }
+    }
     res.status(500).json({
       success: false,
       message: "Failed to create booking",
@@ -69,6 +85,15 @@ const updateBooking = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err) {
+    if (err instanceof Error) {
+      if (err.message === "Booking not found or access denied") {
+        res.status(404).json({
+          success: false,
+          message: "Booking not found or access denied",
+        });
+        return;
+      }
+    }
     res.status(500).json({
       success: false,
       message: "Failed to update booking",
