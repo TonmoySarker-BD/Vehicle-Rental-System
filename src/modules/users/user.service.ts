@@ -97,6 +97,9 @@ const deleteUser = async (id: number) => {
     if (err instanceof Error && err.message === "User has active bookings") {
       throw err;
     }
+    else if (err instanceof Error && err.message === "User not found") {
+      throw err;
+    }
     throw new Error("Failed to delete user");
   }
 };
