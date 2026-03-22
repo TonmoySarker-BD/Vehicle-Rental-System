@@ -36,8 +36,17 @@ const auth =
       }
 
       req.user = decoded as jwt.JwtPayload;
+
+      // Additional check for customer role to ensure they can only access their own data
       if (roles.includes("customer") && role === "customer") {
-        if (!req.params.userId && !req.body.customer_id) {
+
+        // Pass the customer using own token to access their own data
+        if (!req.body) {
+          return next();
+        }
+        const requestedUserId = parseInt(req.params.userId || req.body.customer_id);
+
+        if (isNaN(requestedUserId)) {
           return res
             .status(400)
             .json({
@@ -45,10 +54,6 @@ const auth =
               message: "User ID is required for customer role",
             });
         }
-
-        const requestedUserId = parseInt(
-          req.params.userId || req.body.customer_id,
-        );
 
         if (requestedUserId !== userId) {
           return res
