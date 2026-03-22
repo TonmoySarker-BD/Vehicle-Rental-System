@@ -24,9 +24,13 @@ const signup = async (
         ];
         const result = await pool.query(query, values);
         const { password: _password, ...safeUser } = result.rows[0];
-
+console.log("Created user:", safeUser);
         return {id: safeUser.id , name: safeUser.name, email: safeUser.email, phone: safeUser.phone, role: safeUser.role};
     } catch (err) {
+        const dbError = err as { code?: string; constraint?: string };
+        if (dbError.code === "23505" && dbError.constraint === "users_email_key") {
+            throw new Error("Email already exists");
+        }
         console.error("Error creating user:", err);
         throw new Error("Failed to create user");
     }

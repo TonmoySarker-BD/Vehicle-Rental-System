@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import { authServices } from "./auth.service";
 
-// 1. signup controller
+// 1. User Registration Controller
 const signup = async (req: Request, res: Response) => {
   const { name, email, password, phone, role } = req.body;
   try {
@@ -19,14 +19,16 @@ const signup = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err) {
-    res.status(500).json({
+    const message = err instanceof Error ? err.message : "Failed to create user";
+    const statusCode = message === "Email already exists" ? 409 : 500;
+    res.status(statusCode).json({
       success: false,
-      message: "Failed to create user",
+      message,
     });
   }
 };
 
-// 2. sign in controller
+// 2. User Login Controller
 const signIn = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
